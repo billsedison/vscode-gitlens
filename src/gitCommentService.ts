@@ -1,7 +1,14 @@
 'use strict';
 import * as path from 'path';
 import Axios, { AxiosBasicCredentials } from 'axios';
-import { commands, Disposable, window } from 'vscode';
+import {
+    commands,
+    DecorationOptions,
+    Disposable,
+    Range,
+    OverviewRulerLane,
+    window
+} from 'vscode';
 import { Commands, getCommandUri } from './commands/common';
 import { Container } from './container';
 import { GitCommit } from './git/models/commit';
@@ -49,7 +56,6 @@ export class GitCommentService implements Disposable {
 
     private static username?: string;
     private static password?: string;
-
 
     constructor() {
         commands.registerCommand('gitlens.commentCommitFile', this.commentToFile, this);
@@ -180,6 +186,9 @@ export class GitCommentService implements Disposable {
                             }
                             else {
                                 comment.Type = CommentType.Line;
+                                setTimeout(() => {
+                                    this.updateDecorations(comment.Line);
+                                }, 500);
                             }
                             // }
                             if (c.inline && c.inline.path) {
@@ -359,6 +368,25 @@ export class GitCommentService implements Disposable {
                     window.showErrorMessage('Failed to delete comment/reply.');
                 }
             });
+    }
+
+    private updateDecorations(line: number | undefined) {
+        const editor = window.activeTextEditor;
+        if (!editor || !line) {
+            return;
+        }
+
+        const bookmarkDecorationType = window.createTextEditorDecorationType({
+            gutterIconPath: Container.context.asAbsolutePath('images/bookmark.svg'),
+            overviewRulerLane: OverviewRulerLane.Full,
+            overviewRulerColor: 'rgba(21, 126, 251, 0.7)'
+        });
+
+        editor.setDecorations(bookmarkDecorationType, []);
+        const decorations: DecorationOptions[] = [];
+        const decoration = { range: new Range(line, 0, line, 0) };
+        decorations.push(decoration);
+        editor.setDecorations(bookmarkDecorationType, decorations);
     }
 
     dispose() {}
