@@ -18,7 +18,8 @@ function createWindow() {
         toolbar: false,
         skipTaskbar: true,
         width: 750,
-        height: 480
+        height: 480,
+        alwaysOnTop: true
     });
 
     mainWindow.loadFile('index.html');
