@@ -86,11 +86,7 @@ function createWindow() {
                 text = text.replace(/\n\n/g, '\n');
                 mainWindow.webContents.send('init.editor', text);
             } else if (data.command === 'hide') {
-                // hide dock icon on macOS
-                if (process.platform === 'darwin') {
-                    app.dock.hide();
-                }
-                mainWindow.hide();
+                app.quit();
             } else if (data.command === 'show') {
                 // show dock icon on macOS
                 if (process.platform === 'darwin') {
