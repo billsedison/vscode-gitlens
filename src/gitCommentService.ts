@@ -133,7 +133,7 @@ export class GitCommentService implements Disposable {
         await GitCommentService.getCredentials();
         let app;
         let canceled = false;
-        if (!GitCommentService.commentViewerActive) {
+        if (!GitCommentService.commentViewerActive && !GitCommentService.isLoggedIn()) {
             app = runApp('bitbucket-comment-viewer-app');
             app.on('exit', function() {
                 canceled = true;
@@ -167,7 +167,7 @@ export class GitCommentService implements Disposable {
 
     async refreshView() {
         if (GitCommentService.lastFetchedComments) {
-            if (!GitCommentService.commentViewerActive) {
+            if (!GitCommentService.commentViewerActive && !GitCommentService.isLoggedIn()) {
                 const app = await runApp('bitbucket-comment-viewer-app');
                 GitCommentService.commentViewerActive = true;
                 app.on('exit', function() {
@@ -204,7 +204,7 @@ export class GitCommentService implements Disposable {
         await GitCommentService.getCredentials();
         let app;
         let canceled = false;
-        if (!GitCommentService.commentViewerActive) {
+        if (!GitCommentService.commentViewerActive && !GitCommentService.isLoggedIn()) {
             app = await runApp('bitbucket-comment-viewer-app');
             app.on('exit', function() {
                 canceled = true;
