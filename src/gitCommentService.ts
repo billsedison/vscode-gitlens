@@ -133,13 +133,6 @@ export class GitCommentService implements Disposable {
         await GitCommentService.getCredentials();
         let app;
         let canceled = false;
-        if (!GitCommentService.commentViewerActive) {
-            app = runApp('bitbucket-comment-viewer-app');
-            app.on('exit', function() {
-                canceled = true;
-                GitCommentService.commentViewerActive = false;
-            });
-        }
 
         const allComments = await Container.commentService
             .loadComments(AddLineCommentCommand.currentFileGitCommit)
@@ -148,7 +141,15 @@ export class GitCommentService implements Disposable {
             c => c.Path === AddLineCommentCommand.currentFileName && c.Type === CommentType.File
         );
 
-        if (canceled) return;
+        if (!GitCommentService.commentViewerActive && GitCommentService.isLoggedIn()) {
+            app = runApp('bitbucket-comment-viewer-app');
+            app.on('exit', function() {
+                canceled = true;
+                GitCommentService.commentViewerActive = false;
+            });
+        }
+
+        if (canceled || !GitCommentService.isLoggedIn()) return;
 
         GitCommentService.lastFetchedComments = comments;
 
@@ -204,18 +205,20 @@ export class GitCommentService implements Disposable {
         await GitCommentService.getCredentials();
         let app;
         let canceled = false;
-        if (!GitCommentService.commentViewerActive) {
+
+        const allComments = await Container.commentService.loadComments(commit).then(res => (res as Comment[])!);
+        const comments = allComments.filter(c => c.Line! === position.line && c.Path === filename);
+        GitCommentService.lastFetchedComments = comments;
+
+        if (!GitCommentService.commentViewerActive && GitCommentService.isLoggedIn()) {
             app = await runApp('bitbucket-comment-viewer-app');
             app.on('exit', function() {
                 canceled = true;
                 GitCommentService.commentViewerActive = false;
             });
         }
-        const allComments = await Container.commentService.loadComments(commit).then(res => (res as Comment[])!);
-        const comments = allComments.filter(c => c.Line! === position.line && c.Path === filename);
-        GitCommentService.lastFetchedComments = comments;
 
-        if (canceled) return;
+        if (canceled || !GitCommentService.isLoggedIn()) return;
 
         if (!GitCommentService.commentViewerActive && app) {
             GitCommentService.commentViewerActive = true;
