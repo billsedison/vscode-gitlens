@@ -4,7 +4,7 @@ import * as path from 'path';
 import { CancellationTokenSource, TextEditor, Uri, window } from 'vscode';
 import { GlyphChars } from '../constants';
 import { Container } from '../container';
-import { Comment, CommentCacheItem, CommentType } from '../gitCommentService';
+import { Comment, CommentCacheItem, CommentLine, CommentType, GitCommentService } from '../gitCommentService';
 import { GitCommit, GitUri } from '../gitService';
 import { Logger } from '../logger';
 import { CommandQuickPickItem, CommentsQuickPick } from '../quickpicks';
@@ -13,6 +13,16 @@ import { ShowDiffMessage } from '../ui/ipc';
 import { CommentApp } from './commentAppController';
 import { ActiveEditorCachedCommand, Commands, getCommandUri, getRepoPathOrActiveOrPrompt } from './common';
 import * as externalAppController from './externalAppController';
+
+/**
+ * Line number will be sent in To or From field.
+ * See for details:
+ * https://developer.atlassian.com/bitbucket/api/2/reference/resource/repositories/%7Busername%7D/%7Brepo_slug%7D/commit/%7Bnode%7D/comments#get
+ */
+export enum lineCommentTypes {
+    To,
+    From
+}
 
 /**
  *Encapsulates infomation to perform comments management command.
@@ -27,6 +37,7 @@ export interface AddLineCommentsCommandArgs {
     replyCommand?: CommandQuickPickItem;
     type?: operationTypes;
     isFileComment?: boolean;
+    lineCommentType?: lineCommentTypes;
 }
 
 /**
@@ -59,6 +70,9 @@ export class AddLineCommentCommand extends ActiveEditorCachedCommand {
     static currentFileName: string;
     static showFileCommitComment: boolean = false;
 
+    static rightDocumentUri: Uri;
+    static leftDocumentUri: Uri;
+
     // required parameters for bitBucketCommentApp
     private eventEmitter: EventEmitter;
     private BITBUCKET_COMMENT_APP_NAME = 'bitbucket-comment-app';
@@ -86,14 +100,16 @@ export class AddLineCommentCommand extends ActiveEditorCachedCommand {
                     commentArgs.commit!,
                     data.payload as string,
                     commentArgs.fileName as string,
-                    commentArgs.line
+                    commentArgs.line,
+                    commentArgs.lineCommentType
                 );
 
                 // add the new comment in cache
-                // add decoration for new comment
                 if (data.payload) {
                     const newComment = new Comment();
                     newComment.Line = commentArgs.line!;
+                    newComment.LineItem = new CommentLine();
+                    Object.assign(newComment.LineItem, GitCommentService.commentViewerLine);
                     newComment.Path = commentArgs.fileName!;
                     newComment.Type = CommentType.Line;
                     newComment.Commit = commentArgs.commit;
@@ -108,7 +124,17 @@ export class AddLineCommentCommand extends ActiveEditorCachedCommand {
                         const cacheItem = new CommentCacheItem([newComment]);
                         cache.CachedItems.set(commentArgs.commit!.sha, cacheItem);
                     }
-                    Container.commentsDecorator.updateDecorations([newComment]);
+                    // add decoration for new comment
+                    const documentFsPath = window.activeTextEditor!.document.uri.fsPath;
+                    const activeView = Container.commentService.getActiveView(documentFsPath);
+                    if (activeView.isDiffView) {
+                        // there are two editors
+                        Container.commentsDecorator.syncEditors(window.visibleTextEditors);
+                    }
+                    else {
+                        Container.commentsDecorator.addDecoration(GitCommentService.commentViewerLine.CurrentLine!);
+                        Container.commentsDecorator.setDecorations();
+                    }
                 }
             }
             else if (commentArgs.type === operationTypes.Reply) {
@@ -118,6 +144,7 @@ export class AddLineCommentCommand extends ActiveEditorCachedCommand {
                     data.payload as string,
                     commentArgs.fileName as string,
                     commentArgs.line,
+                    commentArgs.lineCommentType,
                     commentArgs.id
                 );
             }
@@ -166,7 +193,7 @@ export class AddLineCommentCommand extends ActiveEditorCachedCommand {
             commentApp = new CommentApp(this.electronPath, this.BITBUCKET_COMMENT_APP_PATH, this.eventEmitter, args);
             commentApp.run();
             commentApp.setUpConnection();
-            commentApp.initEditor(initText)
+            commentApp.initEditor(initText);
         }
     }
 
@@ -336,24 +363,48 @@ export class AddLineCommentCommand extends ActiveEditorCachedCommand {
 
                     const cache = Container.commentService.commentCache;
                     const hasCache = cache.CachedItems.has(args.commit!.sha);
-                    let removeDecoration = true;
                     if (hasCache) {
                         // delete comment from cache
                         const cachedComment = cache.CachedItems.get(args.commit!.sha)!;
-                        for (let index = 0; index < cachedComment.Comments.length; ++index) {
-                            const comment = cachedComment.Comments[index];
-                            if (comment.Id === args.id) {
-                                cachedComment.Comments.splice(index, 1);
+                        const deletedCommentIndex = cachedComment.Comments.findIndex(c => c.Id === args.id);
+                        cachedComment.Comments.splice(deletedCommentIndex, 1);
+                        // check if there is still any comment on the same line
+                        // if there is, no need to remove decoration
+                        // otherwise remove
+                        let anotherCommentIndex: number;
+                        if (GitCommentService.commentViewerLine.To) {
+                            anotherCommentIndex = cachedComment.Comments.findIndex(
+                                c =>
+                                    c.LineItem!.To === GitCommentService.commentViewerLine.To &&
+                                    c.Path === args.fileName
+                            );
+                        }
+                        else {
+                            anotherCommentIndex = cachedComment.Comments.findIndex(
+                                c =>
+                                    c.LineItem!.From === GitCommentService.commentViewerLine.From &&
+                                    c.Path === args.fileName
+                            );
+                        }
+
+                        if (anotherCommentIndex === -1) {
+                            // could not find any comment on the same line
+                            // remove decoration
+                            const documentFsPath = window.activeTextEditor!.document.uri.fsPath;
+                            const activeView = Container.commentService.getActiveView(documentFsPath);
+                            if (activeView.isDiffView) {
+                                // there are two editors
+                                Container.commentsDecorator.syncEditors(window.visibleTextEditors);
                             }
-                            else if (comment.Line === args.line && comment.Path === args.fileName) {
-                                // there's still another comment on this line
-                                // no need to remove decoration
-                                removeDecoration = false;
-                                break;
+                            else {
+                                Container.commentsDecorator.removeDecoration(
+                                    GitCommentService.commentViewerLine.CurrentLine!
+                                );
+                                Container.commentsDecorator.setDecorations();
                             }
+
                         }
                     }
-                    Container.commentsDecorator.updateDecorations([deletedComment], removeDecoration);
                 }
             }
             else {
