@@ -2,11 +2,12 @@
 import { CancellationTokenSource,  InputBoxOptions, window } from 'vscode';
 import { GitCommentService } from '../gitCommentService';
 import { Logger } from '../logger';
-import { ActiveEditorCachedCommand, Commands } from './common';
+import {ActiveEditorCachedCommand, command, Commands} from './common';
 
 /**
  * Command to prompt user for Bitbucket service credentials.
  */
+@command()
 export class BitBucketServiceAuthCommand extends ActiveEditorCachedCommand {
     constructor() {
         super(Commands.BitBuckerServiceAuth);
