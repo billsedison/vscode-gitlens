@@ -15,19 +15,5 @@ fields.forEach((field) => {
   newPackageJSON[field] = jsonMeta[field];
 });
 
-// 4. Write the JSON to package.json
+// 3. Write the JSON to package.json
 fs.writeFileSync('./package.json', JSON.stringify(newPackageJSON, null, 2));
-
-// // 5. Run npm command
-// const { spawnSync } = require('child_process');
-// let cmd;
-// if (process.argv.length === 3) {
-//   cmd = spawnSync('npm', [process.argv[2]]);
-// } else {
-//   cmd = spawnSync('npm', [process.argv[2], process.argv[3]]);
-// }
-// console.log(cmd.stdout.toString());
-// console.error(cmd.stderr.toString());
-
-// // 6. Rename the original package.json back to package.json
-// fs.renameSync('./package.json.orig', './package.json');
