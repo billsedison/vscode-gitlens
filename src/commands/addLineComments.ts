@@ -11,7 +11,7 @@ import { CommandQuickPickItem, CommentsQuickPick } from '../quickpicks';
 import { Strings } from '../system';
 import { ShowDiffMessage } from '../ui/ipc';
 import { CommentApp } from './commentAppController';
-import { ActiveEditorCachedCommand, Commands, getCommandUri, getRepoPathOrActiveOrPrompt } from './common';
+import {ActiveEditorCachedCommand, command, Commands, getCommandUri, getRepoPathOrActiveOrPrompt} from './common';
 import * as externalAppController from './externalAppController';
 
 /**
@@ -45,6 +45,7 @@ export let commentApp: CommentApp;
 /**
  * Command to add/edit/delete/reply an inline or file comment.
  */
+@command()
 export class AddLineCommentCommand extends ActiveEditorCachedCommand {
     /**
      * Gets markdown for command with given argumants.
