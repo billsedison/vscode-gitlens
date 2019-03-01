@@ -123,7 +123,7 @@ export class CommitSearches extends App<CommitSearchBootstrap> {
                 searchMessage.innerText = event.data.searchLabel;
                 return;
             }
-            if (event.data.type === 'showDiff') {
+            if (event.data.type === 'showDiff' || event.data.type === 'settingsChanged') {
                 return;
             }
 
