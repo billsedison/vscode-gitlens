@@ -16,4 +16,4 @@ fields.forEach((field) => {
 });
 
 // 3. Write the JSON to package.json
-fs.writeFileSync('./package.json', JSON.stringify(newPackageJSON, null, 2));
+fs.writeFileSync('./package.json', JSON.stringify(newPackageJSON, null, 4));
