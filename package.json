@@ -5084,7 +5084,7 @@
         "vsce": "1.57.0",
         "vscode": "1.1.29",
         "webpack": "4.29.3",
-        "webpack-cli": "3.2.3"
+        "webpack-cli": "3.2.3",
     "webpack-externals-plugin": "^1.0.0"
   }
 }
