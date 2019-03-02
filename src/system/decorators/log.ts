@@ -1,5 +1,5 @@
 'use strict';
-import { LogCorrelationContext, Logger, LogLevel } from '../../logger';
+import { LogCorrelationContext, Logger, TraceLevel } from '../../logger';
 import { Functions } from './../function';
 import { Strings } from './../string';
 
@@ -63,7 +63,7 @@ export function debug<T>(
 
 export function log<T>(
     options: {
-        args?: false | { [arg: number]: ((arg: any) => string | false) };
+        args?: false | { [arg: number]: (arg: any) => string | false };
         condition?(...args: any[]): boolean;
         correlate?: boolean;
         debug?: boolean;
@@ -98,8 +98,8 @@ export function log<T>(
 
             if (
                 (!Logger.isDebugging &&
-                    Logger.level !== LogLevel.Debug &&
-                    !(Logger.level === LogLevel.Verbose && !options.debug)) ||
+                    Logger.level !== TraceLevel.Debug &&
+                    !(Logger.level === TraceLevel.Verbose && !options.debug)) ||
                 (typeof options.condition === 'function' && !options.condition(...args))
             ) {
                 return fn!.apply(this, args);

@@ -1724,7 +1724,9 @@ export class GitService implements Disposable {
 
     async getRepoPath(filePath: string, options?: { ref?: string }): Promise<string | undefined>;
     async getRepoPath(uri: Uri | undefined, options?: { ref?: string }): Promise<string | undefined>;
-    @log()
+    @log({
+        exit: path => `returned ${path}`
+    })
     async getRepoPath(
         filePathOrUri: string | Uri | undefined,
         options: { ref?: string } = {}
@@ -1816,7 +1818,9 @@ export class GitService implements Disposable {
         const repositories = [...(await this.getRepositories())];
         if (repositories.length === 0) return repositories;
 
-        return repositories.sort((a, b) => (a.starred ? -1 : 1) - (b.starred ? -1 : 1) || a.index - b.index);
+        return repositories
+            .filter(r => !r.closed)
+            .sort((a, b) => (a.starred ? -1 : 1) - (b.starred ? -1 : 1) || a.index - b.index);
     }
 
     private async getRepositoryTree(): Promise<TernarySearchTree<Repository>> {
@@ -1840,7 +1844,9 @@ export class GitService implements Disposable {
         repoPathOrUri: string | Uri,
         options?: { ref?: string; skipCacheUpdate?: boolean }
     ): Promise<Repository | undefined>;
-    @log()
+    @log({
+        exit: repo => `returned ${repo !== undefined ? `${repo.path}` : 'undefined'}`
+    })
     async getRepository(
         repoPathOrUri: string | Uri,
         options: { ref?: string; skipCacheUpdate?: boolean } = {}
@@ -2030,7 +2036,7 @@ export class GitService implements Disposable {
     ): Promise<boolean>;
     async isTracked(uri: GitUri): Promise<boolean>;
     @log({
-        exit: tracked => tracked.toString(),
+        exit: tracked => `returned ${tracked.toString()}`,
         singleLine: true
     })
     async isTracked(

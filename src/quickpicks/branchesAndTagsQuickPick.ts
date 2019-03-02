@@ -115,7 +115,7 @@ export interface BranchesAndTagsQuickPickOptions {
 
 export class BranchesAndTagsQuickPick {
     constructor(
-        public readonly repoPath: string
+        public readonly repoPath: string | undefined
     ) {}
 
     async show(
@@ -177,7 +177,10 @@ export class BranchesAndTagsQuickPick {
                             quickpick.busy = true;
                             quickpick.enabled = false;
 
-                            if (await Container.git.validateReference(this.repoPath, ref)) {
+                            if (
+                                this.repoPath === undefined ||
+                                (await Container.git.validateReference(this.repoPath, ref))
+                            ) {
                                 resolve(new RefQuickPickItem(ref));
                             }
                             else {
@@ -267,6 +270,7 @@ export class BranchesAndTagsQuickPick {
 
             branches.sort(
                 (a, b) =>
+                    (a.starred ? -1 : 1) - (b.starred ? -1 : 1) ||
                     (b.remote ? -1 : 1) - (a.remote ? -1 : 1) ||
                     a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
             );

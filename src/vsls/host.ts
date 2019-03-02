@@ -21,7 +21,7 @@ import {
 import { vslsUriRootRegex } from './vsls';
 
 const defaultWhitelistFn = () => true;
-const gitWhitelist = new Map<string, ((args: any[]) => boolean)>([
+const gitWhitelist = new Map<string, (args: any[]) => boolean>([
     ['blame', defaultWhitelistFn],
     ['branch', args => args[1] === '-vv' || args[1] === '--contains'],
     ['cat-file', defaultWhitelistFn],
@@ -75,7 +75,7 @@ export class VslsHostService implements Disposable {
         this.onRequest(RepositoriesInFolderRequestType, this.onRepositoriesInFolderRequest.bind(this));
         this.onRequest(WorkspaceFileExistsRequestType, this.onWorkspaceFileExistsRequest.bind(this));
 
-        this.onWorkspaceFoldersChanged();
+        void this.onWorkspaceFoldersChanged();
     }
 
     dispose() {

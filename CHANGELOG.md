@@ -4,6 +4,45 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](http://keepachangelog.com/) and this project adheres to [Semantic Versioning](http://semver.org/).
 
+## [9.5.1] - 2019-02-13
+
+### Added
+
+- Adds better tooltips for file revisions (`gitlen://` uris) — includes the commit id
+- Adds an _Open Revision from Branch or Tag..._ (`gitlens.openFileRevisionFromBranch`) command to open the revision of the current file from the selected branch &mdash; closes [#646](https://github.com/eamodio/vscode-gitlens/issues/646)
+
+### Fixed
+
+- Fixes issues with the welcome page and the interactive settings in the latest vscode insiders build
+
+## [9.5.0] - 2019-02-06
+
+### Added
+
+- Adds a `mailto:` link to the author on the _commit details_ hover &mdash; closes [#642](https://github.com/eamodio/vscode-gitlens/issues/642)
+- Adds support for customizing the layout of the _commit details_ hover
+ - Adds a `gitlens.hovers.detailsMarkdownFormat` setting to specify the format (in markdown) of the _commit details_ hover
+- Adds the author's e-mail to the tooltip of commits in the views &mdash; closes [#642](https://github.com/eamodio/vscode-gitlens/issues/642)
+- Adds a new author e-mail format token (`${email}`) &mdash; closes [#642](https://github.com/eamodio/vscode-gitlens/issues/642)
+  - Supported in the following settings: `gitlens.blame.format`, `gitlens.currentLine.format`, `gitlens.hovers.detailsMarkdownFormat`, `gitlens.views.commitFormat`, `gitlens.views.commitDescriptionFormat`, `gitlens.views.stashFormat`, `gitlens.views.stashDescriptionFormat`, and `gitlens.statusBar.format`
+
+### Changed
+
+- Changes the sorting of remotes in the _Repositories_ view to sort the default remote first
+- Changes relative date formatting of the last fetched date of repositories in the _Repositories_ view to instead use an absolute format and will additionally add the time of day if less than a day has passed
+  - This avoids having to periodically refresh the repository (which causes all of its children to re-render) in order to update the relative time
+
+### Fixed
+
+- Fixes [#591](https://github.com/eamodio/vscode-gitlens/issues/591) - GitLens Error: Unable to open
+- Fixes [#620](https://github.com/eamodio/vscode-gitlens/issues/620) - Wrong URL to open commit on Azure DevOps if cloned via SSH &mdash; thanks to [PR #621](https://github.com/eamodio/vscode-gitlens/pull/621) by Yan Zhang ([@Eskibear](https://github.com/Eskibear))
+- Fixes [#626](https://github.com/eamodio/vscode-gitlens/issues/626) - Branch names with only digits always appear first &mdash; thanks to [PR #627](https://github.com/eamodio/vscode-gitlens/pull/627) by Marc Lasson ([@mlasson](https://github.com/mlasson))
+- Fixes [#631](https://github.com/eamodio/vscode-gitlens/issues/631) - Remotes fail to show in gui
+- Fixes [#633](https://github.com/eamodio/vscode-gitlens/issues/633) - Compare File with Previous Revision doesn't work if path contains '#'
+- Fixes [#635](https://github.com/eamodio/vscode-gitlens/issues/635) - Show more commit not working properly
+- Fixes an issue where the _Open File_, _Open File on Remote_, and _Copy Remote Url to Clipboard_ commands didn't always work on changed files in the _Repositories_ view
+- Fixes an issue where the default remote wasn't used first to provide automatic issue linking
+
 ## [9.4.1] - 2019-01-08
 
 ### Fixed
@@ -395,7 +434,7 @@ The format is based on [Keep a Changelog](http://keepachangelog.com/) and this p
 ### Fixed
 
 - Fixes [#400](https://github.com/eamodio/vscode-gitlens/issues/412) - GitLens logging to debug console when debugging different extension
-- Fixes [#409](https://github.com/eamodio/vscode-gitlens/issues/409) - Literal $(ellipsis) inserted into commit QuickPick menu entry placeholder text
+- Fixes [#409](https://github.com/eamodio/vscode-gitlens/issues/409) - Literal \$(ellipsis) inserted into commit QuickPick menu entry placeholder text
 - Fixes [#415](https://github.com/eamodio/vscode-gitlens/issues/415) - Branch names get mangled by color escapes &mdash; thanks to [PR #416](https://github.com/eamodio/vscode-gitlens/pull/416) by Roy Ivy III ([@rivy](https://github.com/rivy))
 
 ## [8.3.5] - 2018-06-08
