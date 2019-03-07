@@ -27,3 +27,5 @@ fi
 
 # 3. Rename the backup package.json back
 mv ./package.json.orig ./package.json
+
+# 4 if the command is pack, then do further things to package the
