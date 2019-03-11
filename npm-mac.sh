@@ -28,4 +28,34 @@ fi
 # 3. Rename the backup package.json back
 mv ./package.json.orig ./package.json
 
-# 4 if the command is pack, then do further things to package the
+# 4 if the command is pack, then do further things to fix the vsix package.
+if [[ "$#" -eq 2 && "$1" = "run" && "$2" = "pack" ]]; then
+  echo "Fix the vsix package"
+  echo "  Unziping gitlens-extended-9.5.1.vsix"
+  unzip -qq gitlens-extended-9.5.1.vsix -d gitlens-extended-9.5.1
+
+  echo "  Adding dist/ to vsix"
+  cp -fr dist gitlens-extended-9.5.1/extension/
+
+  echo "  Adding bitbucket-comment-app/ to vsix"
+  cp -fr bitbucket-comment-app gitlens-extended-9.5.1/extension/
+  echo "  Adding bitbucket-comment-viewer-app/ to vsix"
+  cp -fr bitbucket-comment-viewer-app gitlens-extended-9.5.1/extension/
+  echo "  Adding emoji/ to vsix"
+  cp -fr emoji gitlens-extended-9.5.1/extension/
+  echo "  Adding images/ to vsix"
+  cp -fr images gitlens-extended-9.5.1/extension/
+  echo "  Adding node_modules/ to vsix"
+  cp -fr node_modules gitlens-extended-9.5.1/extension/
+  echo "  Fixing package.json in vsix"
+  mv gitlens-extended-9.5.1/extension/package.json.orig gitlens-extended-9.5.1/extension/package.json
+
+  echo "Re-packing vsix package"
+  cd gitlens-extended-9.5.1
+  zip -qq gitlens-extended-9.5.1.vsix -r .
+  mv gitlens-extended-9.5.1.vsix ..
+  cd ..
+
+  echo "Cleanup gitlens-extended-9.5.1/"
+  rm -fr gitlens-extended-9.5.1
+fi
